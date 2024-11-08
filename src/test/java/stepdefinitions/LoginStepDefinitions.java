@@ -1,5 +1,6 @@
 package stepdefinitions;
 
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -8,11 +9,14 @@ import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.actions.Open;
 import net.serenitybdd.screenplay.ensure.Ensure;
 import net.serenitybdd.screenplay.targets.Target;
-import tasks.login.DoLogin;
+import tasks.login.DoLoginTask;
 import tasks.login.LoginTask;
 import ui.LoginPage;
 
+import java.util.List;
+
 public class LoginStepDefinitions {
+    private User user;
 
     @Given("{actor} is on the login page")
     public void the_user_is_on_the_login_page(Actor actor) {
@@ -21,20 +25,19 @@ public class LoginStepDefinitions {
     }
 
     @When("{actor} enters a valid username and password")
-    public void the_user_enters_a_valid_username_and_password(Actor actor) {
+    public void the_user_enters_a_valid_username_and_password(Actor actor, DataTable dataTable) {
         // Enter a valid username and password in the login fields
-        User user = new User("standard_user", "secret_sauce");
-        actor.attemptsTo(
-                new LoginTask(user)
-        );
+        List<List<String>> rows = dataTable.asLists(String.class);
+        for(List<String> val: rows)
+            user = new User(val.get(0), val.get(1));
+
+        actor.attemptsTo( new LoginTask(user) );
     }
 
     @When("{actor} clicks the Login button")
     public void clicks_the_button(Actor actor) {
         // Simulate a click on the Login button to submit the credentials
-        actor.attemptsTo(
-                new DoLogin()
-        );
+        actor.attemptsTo( new DoLoginTask() );
     }
 
     @Then("{actor} should be redirected to the dashboard page")
@@ -58,12 +61,13 @@ public class LoginStepDefinitions {
     }
 
     @When("{actor} enters an invalid username or password")
-    public void the_user_enters_an_invalid_username_or_password(Actor actor) {
+    public void the_user_enters_an_invalid_username_or_password(Actor actor, DataTable dataTable) {
         // Enter an invalid username or password in the login fields
-        User user = new User("standard_user", "secret_sauce111");
-        actor.attemptsTo(
-                new LoginTask(user)
-        );
+        List<List<String>> rows = dataTable.asLists(String.class);
+        for(List<String> val: rows)
+            user = new User(val.get(0), val.get(1));
+
+        actor.attemptsTo( new LoginTask(user) );
     }
 
     @Then("an error message should be displayed saying Invalid username or password")
