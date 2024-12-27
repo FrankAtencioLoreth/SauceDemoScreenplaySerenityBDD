@@ -12,7 +12,7 @@ pipeline {
 
            steps {
                 bat "gradle --version"
-                git "https://github.com/FrankAtencioLoreth/SauceDemoScreenplaySerenityBDD.git"
+                git branch: "main", url "https://github.com/FrankAtencioLoreth/SauceDemoScreenplaySerenityBDD.git"
                 bat "gradle clean build"
                 bat "gradle clean test"
            }
