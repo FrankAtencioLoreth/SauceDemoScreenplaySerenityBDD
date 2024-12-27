@@ -11,10 +11,10 @@ pipeline {
         stage("Tareas de limpieza") {
 
            steps {
-                sh "gradle --version"
+                bat "gradle --version"
                 git "https://github.com/FrankAtencioLoreth/SauceDemoScreenplaySerenityBDD.git"
-                sh "gradle clean build"
-                sh "gradle clean test"
+                bat "gradle clean build"
+                bat "gradle clean test"
            }
 
         }
