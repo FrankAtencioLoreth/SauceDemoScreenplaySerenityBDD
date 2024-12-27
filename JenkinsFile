@@ -1,0 +1,33 @@
+pipeline {
+
+    agent any
+
+    tools {
+        gradle "Gradle"
+    }
+
+    stages {
+
+        stage("Tareas de limpieza") {
+
+           steps {
+
+                git "https://github.com/FrankAtencioLoreth/SauceDemoScreenplaySerenityBDD.git"
+                sh "gradle clean"
+
+           }
+
+        }
+
+        stage("Otras tareas") {
+
+            steps {
+
+                echo "Este es el segundo stage"
+
+            }
+
+        }
+
+    }
+}
