@@ -18,7 +18,7 @@ Feature: Shopping Cart and Payments on SauceDemo
     When the user clicks on the cart icon
     Then the user should see the added products with their prices and quantities
 
-  @TCCART002
+  @TCCART002 @SMOKE
   Scenario: Proceed to checkout
     When the user clicks on the cart icon
     When the user clicks the Checkout button

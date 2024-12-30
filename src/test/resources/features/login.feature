@@ -7,7 +7,7 @@ Feature: User Login
   Background:
     Given the user is on the login page
 
-  @TCLG001
+  @TCLG001 @SMOKE
   Scenario Outline: Successful Login
     When the user enters a valid username and password
       |<username>|<password>|
