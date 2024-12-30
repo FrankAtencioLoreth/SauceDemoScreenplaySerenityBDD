@@ -142,7 +142,5 @@ pipeline {
                  body: """The pipeline ${env.JOB_NAME} (#${env.BUILD_NUMBER}) failed.\nPlease check the log here: ${env.BUILD_URL}"""
             echo "Email sent..."
         }
-
-
     }
 }
