@@ -7,6 +7,7 @@ pipeline {
     environment {
         USER = "fatencio@gmail.com"
         PASS = "Admin123*"
+        RECIPIENTS = "frank.atencio.loreth@gmail.com" // recipient's emails
     }
 
     /*
@@ -57,7 +58,6 @@ pipeline {
                 echo "Building project"
                 bat "gradle --version"
                 git branch: "main", url: "https://github.com/FrankAtencioLoreth/SauceDemoScreenplaySerenityBDD.git"
-                //bat "gradle clean build"
             }
         }
         stage("Run tests") {
@@ -67,12 +67,12 @@ pipeline {
                         expression { params.typeTest == "Regression" }
                     }
                     steps {
-                        echo "Type of test: ${typeTest}"
+                        echo "Type of test: ${params.typeTest}"
                         echo "With USER: ${USER} and PASS: ${PASS}"
                         echo "Executing tests in environment: ${environment}"
-                        echo "Executing regression tests"
+                        echo "Executing ${params.typeTest} tests"
                         bat 'gradle clean test -Dcucumber.filter.tags="@REGRESSION"'
-                        echo "Regression tests completed"
+                        echo "${params.typeTest} tests completed"
                     }
                 }
 
@@ -81,12 +81,12 @@ pipeline {
                         expression { params.typeTest == "Smoke" }
                     }
                     steps {
-                        echo "Type of test: ${typeTest}"
+                        echo "Type of test: ${params.typeTest}"
                         echo "With USER: ${USER} and PASS: ${PASS}"
                         echo "Executing tests in environment: ${environment}"
-                        echo "Executing smoke tests"
+                        echo "Executing ${params.typeTest} tests"
                         bat 'gradle clean test -Dcucumber.filter.tags="@SMOKE"'
-                        echo "Smoke tests completed"
+                        echo "${params.typeTest} tests completed"
                     }
                 }
 
@@ -98,9 +98,9 @@ pipeline {
                         echo "Type of test: ${typeTest}"
                         echo "With USER: ${USER} and PASS: ${PASS}"
                         echo "Executing tests in environment: ${environment}"
-                        echo "Executing integration tests"
+                        echo "Executing ${params.typeTest} tests"
                         bat 'gradle clean test -Dcucumber.filter.tags="@INTEGRATION"'
-                        echo "Integration tests completed"
+                        echo "${params.typeTest} tests completed"
                     }
                 }
 
@@ -111,7 +111,7 @@ pipeline {
     post {
         always {
 
-            echo "Generate html report-${env.BUILD_NUMBER}"
+            echo "Generating html report ${env.BUILD_NUMBER}"
 
             publishHTML (
                 target : [
@@ -129,10 +129,18 @@ pipeline {
 
         success {
             echo "Pipeline execution successful"
+            mail to: env.RECIPIENTS,
+                 subject: "Pipeline ${env.JOB_NAME} (#${env.BUILD_NUMBER}) - Successfully completed",
+                 body: """The pipeline ${env.JOB_NAME} (#${env.BUILD_NUMBER}) completed successfully.\nCheck the details here: ${env.BUILD_URL}"""
+            echo "Email sent..."
         }
 
         failure {
             echo "Pipeline execution unsucessful. Review logs"
+            mail to: env.RECIPIENTS,
+                 subject: "Pipeline ${env.JOB_NAME} (#${env.BUILD_NUMBER}) - Failed",
+                 body: """The pipeline ${env.JOB_NAME} (#${env.BUILD_NUMBER}) failed.\nPlease check the log here: ${env.BUILD_URL}"""
+            echo "Email sent..."
         }
 
 
