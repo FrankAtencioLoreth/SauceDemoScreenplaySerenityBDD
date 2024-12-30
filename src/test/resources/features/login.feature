@@ -1,3 +1,4 @@
+@REGRESSION
 Feature: User Login
   As a registered user
   I want to log in to my account

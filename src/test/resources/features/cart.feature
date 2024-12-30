@@ -1,3 +1,4 @@
+@REGRESSION
 Feature: Shopping Cart and Payments on SauceDemo
 
   Background:
