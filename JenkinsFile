@@ -1,33 +1,140 @@
 pipeline {
-
     agent any
 
+   /*
+     Environments variables
+   */
+    environment {
+        USER = "fatencio@gmail.com"
+        PASS = "Admin123*"
+    }
+
+    /*
+     Parameters definition
+    */
+    parameters {
+        choice(
+            name: "environment",
+            choices: ["DEV", "QA", "PROD"],
+            description: "Select a test environment"
+        )
+        choice(
+            name: "typeTest",
+            choices: ["Smoke", "Integration", "Regression"],
+            description: "Select a test type"
+        )
+    }
+
+    /*
+     Build periodically
+    */
+    triggers {
+        //Execute every Saturday at 8:00 AM
+        cron("H 8 * * 6")
+    }
+
+    /*
+     Tools and dependencies management
+    */
     tools {
         gradle "Gradle"
     }
 
+    /*
+     Build, tests and deployment process
+    */
     stages {
 
-        stage("Tareas de limpieza") {
+        stage("Clean workspace") {
+            steps {
+                echo "Cleaning workspace..."
+                deleteDir()
+            }
+        }
 
-           steps {
+        stage("Build project") {
+            steps {
+                echo "Building project"
                 bat "gradle --version"
                 git branch: "main", url: "https://github.com/FrankAtencioLoreth/SauceDemoScreenplaySerenityBDD.git"
-                bat "gradle clean build"
-                bat "gradle clean test"
-           }
-
+                //bat "gradle clean build"
+            }
         }
+        stage("Run tests") {
+            parallel {
+                stage ("Executing regression tests") {
+                    when {
+                        expression { params.typeTest == "Regression" }
+                    }
+                    steps {
+                        echo "Type of test: ${typeTest}"
+                        echo "With USER: ${USER} and PASS: ${PASS}"
+                        echo "Executing tests in environment: ${environment}"
+                        echo "Executing regression tests"
+                        bat 'gradle clean test -Dcucumber.filter.tags="@REGRESSION"'
+                        echo "Regression tests completed"
+                    }
+                }
 
-        stage("Otras tareas") {
+                stage ("Executing smoke tests") {
+                    when {
+                        expression { params.typeTest == "Smoke" }
+                    }
+                    steps {
+                        echo "Type of test: ${typeTest}"
+                        echo "With USER: ${USER} and PASS: ${PASS}"
+                        echo "Executing tests in environment: ${environment}"
+                        echo "Executing smoke tests"
+                        bat 'gradle clean test -Dcucumber.filter.tags="@SMOKE"'
+                        echo "Smoke tests completed"
+                    }
+                }
 
-            steps {
-
-                echo "Este es el segundo stage"
+                stage ("Executing integration tests") {
+                    when {
+                        expression { params.typeTest == "Integration" }
+                    }
+                    steps {
+                        echo "Type of test: ${typeTest}"
+                        echo "With USER: ${USER} and PASS: ${PASS}"
+                        echo "Executing tests in environment: ${environment}"
+                        echo "Executing integration tests"
+                        bat 'gradle clean test -Dcucumber.filter.tags="@INTEGRATION"'
+                        echo "Integration tests completed"
+                    }
+                }
 
             }
-
         }
+    }
+
+    post {
+        always {
+
+            echo "Generate html report-${env.BUILD_NUMBER}"
+
+            publishHTML (
+                target : [
+                 allowMissing: false,
+                 alwaysLinkToLastBuild: true,
+                 keepAll: true,
+                 reportDir: "target/site/serenity",
+                 reportFiles: "report-"+"${env.BUILD_NUMBER}.html".replaceAll("5f", ""),
+                 reportName: "report-"+"${env.BUILD_NUMBER}".replaceAll("5f", ""),
+                 reportTitles: "The Report"
+                ]
+            )
+            archiveArtifacts artifacts: 'target/site/serenity/', fingerprint: false, followSymlinks: true
+        }
+
+        success {
+            echo "Pipeline execution successful"
+        }
+
+        failure {
+            echo "Pipeline execution unsucessful. Review logs"
+        }
+
 
     }
 }
