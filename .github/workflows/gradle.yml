@@ -36,6 +36,13 @@ jobs:
     - name: Build with Gradle Wrapper
       run: gradle clean test -Dcucumber.filter.tags="@REGRESSION"
 
+    - name: Test Report Generation
+      uses: actions/upload-artifact@v4
+      if: success() || failure()
+      with:
+          name: Serenity Report                 # Name of the folder
+          path: target/site/serenity/           # Path to test results
+
     # NOTE: The Gradle Wrapper is the default and recommended way to run Gradle (https://docs.gradle.org/current/userguide/gradle_wrapper.html).
     # If your project does not have the Gradle Wrapper configured, you can use the following configuration to run Gradle with a specified version.
     #
