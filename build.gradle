@@ -1,3 +1,11 @@
+plugins {
+    id 'java'
+    id 'eclipse'
+    id 'idea'
+    id 'net.serenity-bdd.serenity-gradle-plugin' version '4.2.1'
+    id 'org.sonarqube' version '4.4.1.3373'
+}
+
 defaultTasks 'clean', 'test', 'aggregate'
 
 repositories {
@@ -5,22 +13,23 @@ repositories {
     mavenLocal()
 }
 
-buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath "net.serenity-bdd:serenity-gradle-plugin:4.2.1"
-    }
+allprojects {
+    ext.baseVersion = "0.1"
+    ext.snapshotVersion = true
+    group = "org.sonarqube"
+    version = "$baseVersion" + (snapshotVersion ? "-SNAPSHOT" : "")
 }
 
-
-apply plugin: 'java'
-apply plugin: 'eclipse'
-apply plugin: 'idea'
-apply plugin: "net.serenity-bdd.serenity-gradle-plugin"
+sonar {
+    properties {
+        property "sonar.projectName", "SaucdeDemo Screemplay Serenity"
+        property "sonar.projectKey", "org.sonarqube:saucedemo-screemplay-serenity"
+        property "sonar.sourceEncoding", "UTF-8"
+        property "sonar.tests", "src/test/java"
+        property "sonar.gradle.skipCompile", "true"
+        property "sonar.exclusions", "**/CucumberTestSuite.java"
+    }
+}
 
 ext {
     serenity_version = '4.2.6'
@@ -34,7 +43,6 @@ ext {
     slf4j_version="2.0.13"
     lombok_version="1.18.34"
 }
-
 
 dependencies {
     testImplementation "net.serenity-bdd:serenity-core:${serenity_version}"
@@ -56,16 +64,14 @@ dependencies {
     testAnnotationProcessor "org.projectlombok:lombok:${lombok_version}"
 }
 
-
-test {
+tasks.named('test') {
     useJUnitPlatform()
     systemProperty "cucumber.filter.tags", System.getProperty("cucumber.filter.tags")
     systemProperty "cucumber.options", System.getProperty("cucumber.options")
     def parameter = "-Denvironment="
     def environment = System.getProperty("environment")
-    jvmArgs(parameter+environment)
+    jvmArgs(parameter + environment)
+    finalizedBy tasks.named('aggregate')
 }
 
 gradle.startParameter.continueOnFailure = true
-
-test.finalizedBy(aggregate)
